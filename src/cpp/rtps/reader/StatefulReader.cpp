@@ -45,6 +45,7 @@ StatefulReader::~StatefulReader()
     logInfo(RTPS_READER,"StatefulReader destructor.";);
     for(WriterProxy* writer : matched_writers_)
     {
+        writer->stop();
         delete(writer);
     }
     for (WriterProxy* writer : matched_writers_pool_)

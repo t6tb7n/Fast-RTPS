@@ -899,7 +899,7 @@ void WLP::sub_liveliness_lost(
         {
             if (reader->matched_writer_is_matched(ratt))
             {
-                update_liveliness_changed_status(writer, reader, true);
+                update_liveliness_changed_status(writer, reader, +1, -1);
             }
         }
     }
@@ -923,32 +923,33 @@ void WLP::sub_liveliness_recovered(
         {
             if (reader->matched_writer_is_matched(ratt))
             {
-                update_liveliness_changed_status(writer, reader, false);
+                update_liveliness_changed_status(writer, reader, -1, +1);
             }
         }
     }
 }
 
 void WLP::update_liveliness_changed_status(
-        GUID_t writer,
-        RTPSReader* reader,
-        bool lost)
+    GUID_t writer,
+    RTPSReader* reader,
+    int32_t alive_change,
+    int32_t not_alive_change)
 {
-    int change = lost ? -1 : 1;
 
-    reader->liveliness_changed_status_.alive_count += change;
-    reader->liveliness_changed_status_.alive_count_change += change;
-    reader->liveliness_changed_status_.not_alive_count -= change;
-    reader->liveliness_changed_status_.not_alive_count_change -= change;
+
+    reader->liveliness_changed_status_.alive_count += alive_change;
+    reader->liveliness_changed_status_.alive_count_change += alive_change;
+    reader->liveliness_changed_status_.not_alive_count += not_alive_change;
+    reader->liveliness_changed_status_.not_alive_count_change += not_alive_change;
     reader->liveliness_changed_status_.last_publication_handle = writer;
 
-    if (reader->getListener() != nullptr)
+    if( reader->getListener() != nullptr )
     {
         reader->getListener()->on_liveliness_changed(reader, reader->liveliness_changed_status_);
-    }
 
-    reader->liveliness_changed_status_.alive_count_change = 0;
-    reader->liveliness_changed_status_.not_alive_count_change = 0;
+        reader->liveliness_changed_status_.alive_count_change = 0;
+        reader->liveliness_changed_status_.not_alive_count_change = 0;
+    }
 }
 
 } /* namespace rtps */

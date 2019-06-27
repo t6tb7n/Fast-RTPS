@@ -242,12 +242,14 @@ private:
      * @brief A method to update the liveliness changed status of a given reader
      * @param writer The writer changing liveliness, specified by its guid
      * @param reader The reader whose liveliness needs to be updated
-     * @param lost True to indicate that liveliness of the writer was lost. False to indicate it was recovered
+     * @param alive_change The change requested for alive count. Should be -1, 0 or +1
+     * @param not_alive_change The change requested for not alive count. Should be -1, 0 or +1
      */
     void update_liveliness_changed_status(
             GUID_t writer,
             RTPSReader* reader,
-            bool lost);
+            int32_t alive_change,
+            int32_t not_alive_change);
 
 #if HAVE_SECURITY
     //!Pointer to the builtinRTPSParticipantMEssageWriter.

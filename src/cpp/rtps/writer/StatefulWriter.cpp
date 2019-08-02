@@ -422,6 +422,43 @@ void StatefulWriter::send_any_unsent_changes()
         network.select_locators(locator_selector_);
         compute_selected_guids();
 
+        RTPSMessageGroup group(mp_RTPSParticipant, this, m_cdrmessages, *this);
+
+        // Add holes in history and send them to all readers
+        if (!matched_readers_.empty())
+        {
+            try
+            {
+                RTPSGapBuilder gap_builder(group);
+                SequenceNumber_t seq = next_all_acked_notify_sequence_;
+                SequenceNumber_t last_sequence = mp_history->next_sequence_number();
+
+                for (auto cit = mp_history->changesBegin(); cit != mp_history->changesEnd(); cit++)
+                {
+                    // Add all sequence numbers until the change's sequence number
+                    while (seq < (*cit)->sequenceNumber)
+                    {
+                        gap_builder.add(seq);
+                        seq++;
+                    }
+
+                    // Skip change's sequence number
+                    seq++;
+                }
+
+                // Add all sequence numbers above last change
+                while (seq < last_sequence)
+                {
+                    gap_builder.add(seq);
+                    seq++;
+                }
+            }
+            catch (const RTPSMessageGroup::timeout&)
+            {
+                logError(RTPS_WRITER, "Max blocking time reached");
+            }
+        }
+
         for (ReaderProxy* remoteReader : matched_readers_)
         {
             auto unsent_change_process = [&](const SequenceNumber_t& seq_num, const ChangeForReader_t* unsentChange)
@@ -440,7 +477,11 @@ void StatefulWriter::send_any_unsent_changes()
                 else
                 {
                     remoteReader->set_change_to_status(seq_num, UNDERWAY, true);
-                    notRelevantChanges.add_sequence_number(seq_num, remoteReader);
+                    // Skip holes in history, as they were added before
+                    if (unsentChange != nullptr)
+                    {
+                        notRelevantChanges.add_sequence_number(seq_num, remoteReader);
+                    }
                 }
             };
 
@@ -463,7 +504,6 @@ void StatefulWriter::send_any_unsent_changes()
 
             try
             {
-                RTPSMessageGroup group(mp_RTPSParticipant, this, m_cdrmessages, *this);
                 uint32_t lastBytesProcessed = 0;
 
                 while (!relevantChanges.empty())
@@ -572,6 +612,8 @@ void StatefulWriter::send_any_unsent_changes()
                     }
                     group.add_gap(pair.second);
                 }
+
+                group.flush_and_reset();
             }
             catch(const RTPSMessageGroup::timeout&)
             {

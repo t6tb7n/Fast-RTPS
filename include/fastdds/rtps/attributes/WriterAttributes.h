@@ -111,9 +111,6 @@ class WriterAttributes
         //! Liveliness lease duration
         Duration_t liveliness_lease_duration;
 
-        //! Liveliness announcement period
-        Duration_t liveliness_announcement_period;
-
         //!Indicates if the Writer is synchronous or asynchronous
         RTPSWriterPublishMode mode;
 

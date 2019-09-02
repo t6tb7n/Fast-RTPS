@@ -89,14 +89,6 @@ PDPClient::PDPClient(
         BuiltinProtocols* builtin,
         const RTPSParticipantAllocationAttributes& allocation)
     : PDP(builtin, allocation)
-    , _msgbuffer(
-        DISCOVERY_PARTICIPANT_DATA_MAX_SIZE,
-        builtin->mp_participantImpl->getGuid().guidPrefix,
-#if HAVE_SECURITY
-        builtin->mp_participantImpl->is_secure())
-#else
-        false)
-#endif
     , mp_sync(nullptr)
     , _serverPing(false)
 {
@@ -515,7 +507,7 @@ void PDPClient::announceParticipantState(
             }
 
             DirectMessageSender sender(getRTPSParticipant(), &remote_readers, &locators);
-            RTPSMessageGroup group(getRTPSParticipant(), mp_PDPWriter, _msgbuffer, sender);
+            RTPSMessageGroup group(getRTPSParticipant(), mp_PDPWriter, sender);
             if (!group.add_data(*change, false))
             {
                 logError(RTPS_PDP, "Error sending announcement from client to servers");
@@ -553,7 +545,7 @@ void PDPClient::announceParticipantState(
                 }
 
                 DirectMessageSender sender(getRTPSParticipant(), &remote_readers, &locators);
-                RTPSMessageGroup group(getRTPSParticipant(), mp_PDPWriter, _msgbuffer, sender);
+                RTPSMessageGroup group(getRTPSParticipant(), mp_PDPWriter, sender);
 
                 if (!group.add_data(*pPD, false))
                 {

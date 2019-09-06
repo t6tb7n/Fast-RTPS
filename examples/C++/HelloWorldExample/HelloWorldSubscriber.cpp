@@ -28,6 +28,8 @@
 using namespace eprosima::fastrtps;
 using namespace eprosima::fastrtps::rtps;
 
+time_t start_time;
+
 HelloWorldSubscriber::HelloWorldSubscriber():mp_participant(nullptr),
 mp_subscriber(nullptr)
 {
@@ -36,36 +38,35 @@ mp_subscriber(nullptr)
 bool HelloWorldSubscriber::init()
 {
     ParticipantAttributes PParam;
-    PParam.rtps.builtin.discovery_config.discoveryProtocol = DiscoveryProtocol_t::SIMPLE;
-    PParam.rtps.builtin.discovery_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
-    PParam.rtps.builtin.discovery_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
-    PParam.rtps.builtin.discovery_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
-    PParam.rtps.builtin.domainId = 0;
-    PParam.rtps.builtin.discovery_config.leaseDuration = c_TimeInfinite;
+
+    // Load default XML profile.
+    Domain::getDefaultParticipantAttributes(PParam);
     PParam.rtps.setName("Participant_sub");
     mp_participant = Domain::createParticipant(PParam);
     if(mp_participant==nullptr)
         return false;
 
     //REGISTER THE TYPE
-
     Domain::registerType(mp_participant,&m_type);
+
     //CREATE THE SUBSCRIBER
     SubscriberAttributes Rparam;
+    Domain::getDefaultSubscriberAttributes(Rparam);
     Rparam.topic.topicKind = NO_KEY;
     Rparam.topic.topicDataType = "HelloWorld";
     Rparam.topic.topicName = "HelloWorldTopic";
     Rparam.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
-    Rparam.topic.historyQos.depth = 30;
+    Rparam.topic.historyQos.depth = 10;
     Rparam.topic.resourceLimitsQos.max_samples = 50;
     Rparam.topic.resourceLimitsQos.allocated_samples = 20;
     Rparam.qos.m_reliability.kind = RELIABLE_RELIABILITY_QOS;
-    Rparam.qos.m_durability.kind = TRANSIENT_LOCAL_DURABILITY_QOS;
+    Rparam.qos.m_durability.kind = VOLATILE_DURABILITY_QOS;
     mp_subscriber = Domain::createSubscriber(mp_participant,Rparam,(SubscriberListener*)&m_listener);
 
     if(mp_subscriber == nullptr)
         return false;
 
+    start_time = time(nullptr);
 
     return true;
 }
@@ -99,6 +100,12 @@ void HelloWorldSubscriber::SubListener::onNewDataMessage(Subscriber* sub)
             // Print your structure data here.
             std::cout << "Message "<<m_Hello.message()<< " "<< m_Hello.index()<< " RECEIVED"<<std::endl;
         }
+    }
+
+    if (time(nullptr) - start_time > 5)
+    {
+        int *p = NULL;
+        *p = 4;
     }
 
 }

@@ -28,7 +28,7 @@
 using namespace eprosima::fastrtps;
 using namespace eprosima::fastrtps::rtps;
 
-time_t start_time;
+std::chrono::steady_clock::time_point t_start_;
 
 HelloWorldSubscriber::HelloWorldSubscriber():mp_participant(nullptr),
 mp_subscriber(nullptr)
@@ -66,7 +66,7 @@ bool HelloWorldSubscriber::init()
     if(mp_subscriber == nullptr)
         return false;
 
-    start_time = time(nullptr);
+    t_start_ = std::chrono::steady_clock::now();
 
     return true;
 }
@@ -98,12 +98,14 @@ void HelloWorldSubscriber::SubListener::onNewDataMessage(Subscriber* sub)
         {
             this->n_samples++;
             // Print your structure data here.
-            std::cout << "Message "<<m_Hello.message()<< " "<< m_Hello.index()<< " RECEIVED"<<std::endl;
+            // std::cout << "Message "<<m_Hello.message()<< " "<< m_Hello.index()<< " RECEIVED"<<std::endl;
         }
     }
 
-    if (time(nullptr) - start_time > 5)
+    if ((std::chrono::steady_clock::now() - t_start_) > std::chrono::seconds(5) )
     {
+        
+        std::cerr << "Callback number " << n_samples << std::endl;
         int *p = NULL;
         *p = 4;
     }

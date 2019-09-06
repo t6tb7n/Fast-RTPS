@@ -97,11 +97,23 @@ void HelloWorldPublisher::runThread(uint32_t samples, uint32_t sleep)
 {
     if (samples == 0)
     {
+        uint32_t loops_per_second = 1000 / sleep;
+        uint32_t loops = loops_per_second;
+        uint32_t num_prints = 0;
+
         while(!stop)
         {
+            loops--;
+            if(loops == 0)
+            {
+                loops = loops_per_second;
+                num_prints++;
+                std::cout << "Time: " << num_prints << " matches: " << m_listener.n_matched << std::endl;
+            }
+
             if(publish(false))
             {
-                std::cout << "Message: "<<m_Hello.message()<< " with index: "<< m_Hello.index()<< " SENT"<<std::endl;
+                // std::cout << "Message: "<<m_Hello.message()<< " with index: "<< m_Hello.index()<< " SENT"<<std::endl;
             }
             eClock::my_sleep(sleep);
         }

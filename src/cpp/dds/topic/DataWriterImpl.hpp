@@ -37,14 +37,16 @@
 #include <fastrtps/qos/LivelinessLostStatus.h>
 #include <fastrtps/types/TypesBase.h>
 
-using namespace eprosima::fastrtps::types;
+using eprosima::fastrtps::types::ReturnCode_t;
 
 namespace eprosima {
 namespace fastrtps{
 namespace rtps {
+
 class RTPSWriter;
 class RTPSParticipant;
 class TimedEvent;
+
 } // namespace rtps
 
 } // namespace fastrtps

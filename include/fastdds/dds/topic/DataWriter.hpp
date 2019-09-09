@@ -24,7 +24,7 @@
 #include <fastrtps/qos/IncompatibleQosStatus.hpp>
 #include <fastrtps/types/TypesBase.h>
 
-using namespace eprosima::fastrtps::types;
+using eprosima::fastrtps::types::ReturnCode_t;
 
 namespace eprosima {
 namespace fastrtps{
@@ -34,10 +34,12 @@ struct LivelinessLostStatus;
 class TopicAttributes;
 
 namespace rtps {
+
 class WriteParams;
 class WriterAttributes;
 struct InstanceHandle_t;
 struct GUID_t;
+
 } // namespace rtps
 
 } // namespace fastrtps

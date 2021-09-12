@@ -1,12 +1,7 @@
 name: Build
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
-  schedule:                # This trigger is here only to make sure
-    - cron: '17 0 * * SUN' # the example itself doesn't become stale
+  workflow_run:
+    branches: master
 jobs:
   build:
     name: Build
